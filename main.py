@@ -285,6 +285,27 @@ def main():
         
         st.markdown("---")
         
+        # Custom query
+        st.subheader("🎨 Custom Query")
+        custom_query = st.text_area(
+            "Custom Query (Optional)",
+            placeholder="E.g., Create a fitness motivation script",
+            help="Provide specific instructions for your content"
+        )
+        
+        st.markdown("---")
+        
+        # Goal selection
+        st.subheader("🎯 Optimization Goal")
+        goal = st.selectbox(
+            "Select your primary goal:",
+            options=["likes", "comments", "views", "engagement"],
+            index=1,
+            help="Choose what metric you want to optimize for"
+        )
+        
+        st.markdown("---")
+        
         # Style guide upload
         st.subheader("📝 Style Guide")
         style_file = st.file_uploader(
@@ -303,24 +324,6 @@ def main():
         # Data status
         st.subheader("📊 Data Status")
         st.success("✅ Performance data loaded automatically")
-        
-        st.markdown("---")
-        
-        # Goal selection
-        st.subheader("🎯 Optimization Goal")
-        goal = st.selectbox(
-            "Select your primary goal:",
-            options=["likes", "comments", "views", "engagement"],
-            index=1,
-            help="Choose what metric you want to optimize for"
-        )
-        
-        # Custom query
-        custom_query = st.text_area(
-            "Custom Query (Optional)",
-            placeholder="E.g., Create a fitness motivation script",
-            help="Provide specific instructions for your content"
-        )
 
     # Main content area
     col1, col2 = st.columns([2, 1])
