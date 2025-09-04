@@ -340,59 +340,175 @@ def main():
         if st.button("🎬 Generate Instagram Script", type="primary", width='stretch'):
             with st.spinner("🔄 Analyzing your data and generating optimized content..."):
                 try:
-                    # Load and process data
-                    style_docs, data_docs, df = load_and_enhance_data(style_file)
-                    all_docs = style_docs + data_docs
-                    
-                    if not all_docs:
-                        st.error("❌ No valid data found in uploaded files.")
-                        return
-                    
-                    # Create retriever
-                    retriever = create_smart_retriever(all_docs, openai_api_key)
-                    if not retriever:
-                        return
-                    
-                    goal_retriever = enhance_retrieval_for_goal(retriever, goal)
-                    
-                    # Generate content
-                    prompt = create_optimized_prompt()
-                    llm = ChatOpenAI(model="gpt-4o", temperature=0.7, max_tokens=800, openai_api_key=openai_api_key)
-                    
-                    query = custom_query or f"Create high-{goal} Instagram reel script"
-                    relevant_docs = goal_retriever(query)
-                    context = "\n\n---\n\n".join([doc.page_content for doc in relevant_docs])
-                    
-                    # Prepare custom instruction
-                    custom_instruction = f"Focus on: {custom_query}" if custom_query else "Create engaging content based on the provided examples"
-                    
-                    # Show what query is being used
-                    if custom_query:
-                        st.info(f"🎯 Using custom query: '{custom_query}'")
-                    else:
-                        st.info(f"🎯 Using default query for {goal} optimization")
-                    
-                    formatted_prompt = prompt.format(
-                        context=context, 
-                        goal=goal, 
-                        custom_instruction=custom_instruction
-                    )
-                    response = enforce_script_format(llm, formatted_prompt, max_retries=3)
-                    
-                    if response:
-                        st.success("✅ Content generated successfully!")
-                        st.markdown("### 🏆 Your Optimized Script")
+                    # ==========================================
+                    # STEP 1: DATA LOADING
+                    # ==========================================
+                    st.markdown("### 🔍 **DEBUG: Step 1 - Data Loading**")
+                    with st.expander("📊 Click to see data loading details", expanded=True):
+                        st.write("**Loading style guide and performance data...**")
+                        style_docs, data_docs, df = load_and_enhance_data(style_file)
+                        all_docs = style_docs + data_docs
                         
-                        # Display the generated content in a clean, readable format
+                        st.write(f"✅ **Style documents loaded**: {len(style_docs)} documents")
+                        st.write(f"✅ **Performance data documents loaded**: {len(data_docs)} documents")
+                        st.write(f"✅ **Total documents**: {len(all_docs)} documents")
+                        
+                        if df is not None:
+                            st.write(f"✅ **Performance data rows**: {len(df)} rows")
+                            st.write(f"✅ **Performance data columns**: {list(df.columns)}")
+                        else:
+                            st.write("⚠️ **No performance data found**")
+                        
+                        if not all_docs:
+                            st.error("❌ No valid data found in uploaded files.")
+                            return
+                    
+                    # ==========================================
+                    # STEP 2: RETRIEVER CREATION
+                    # ==========================================
+                    st.markdown("### 🔍 **DEBUG: Step 2 - Creating Smart Retriever**")
+                    with st.expander("🧠 Click to see retriever creation details", expanded=True):
+                        st.write("**Creating AI-powered document retriever...**")
+                        retriever = create_smart_retriever(all_docs, openai_api_key)
+                        if not retriever:
+                            st.error("❌ Failed to create retriever")
+                            return
+                        st.write("✅ **Smart retriever created successfully**")
+                        
+                        goal_retriever = enhance_retrieval_for_goal(retriever, goal)
+                        st.write(f"✅ **Goal-aware retriever configured for**: {goal}")
+                    
+                    # ==========================================
+                    # STEP 3: AI BRAIN PROCESSING
+                    # ==========================================
+                    st.markdown("### 🧠 **AI BRAIN: Processing Your Request**")
+                    with st.expander("🎯 Click to see AI thinking process", expanded=True):
+                        query = custom_query or f"Create high-{goal} Instagram reel script"
+                        
+                        # Dynamic AI processing visualization
+                        st.markdown("#### 🎯 **Analyzing Your Request**")
+                        if custom_query:
+                            st.success(f"🎨 **Custom Request**: '{custom_query}'")
+                        else:
+                            st.info(f"🎯 **Default Goal**: Optimize for {goal}")
+                        
+                        # Simulate AI thinking process
+                        import time
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        
+                        steps = [
+                            "🔍 Analyzing your query...",
+                            "📚 Accessing knowledge base...",
+                            "🎨 Understanding style preferences...",
+                            "📊 Processing performance data...",
+                            "🧠 Building creative context...",
+                            "✨ Preparing AI generation..."
+                        ]
+                        
+                        for i, step in enumerate(steps):
+                            status_text.text(step)
+                            progress_bar.progress((i + 1) / len(steps))
+                            time.sleep(0.5)  # Simulate processing time
+                        
+                        status_text.text("✅ AI Brain Ready!")
+                        progress_bar.progress(1.0)
+                        
+                        # Show what AI is considering
+                        st.markdown("#### 🧠 **AI Context Analysis**")
+                        st.write("**The AI is considering:**")
+                        st.write("• Your specific request and goals")
+                        st.write("• Style guide patterns and preferences")
+                        st.write("• Performance data insights")
+                        st.write("• Instagram best practices")
+                        st.write("• Creative content strategies")
+                        
+                        # Get relevant docs (but don't show empty results)
+                        relevant_docs = goal_retriever(query)
+                        context = "\n\n---\n\n".join([doc.page_content for doc in relevant_docs]) if relevant_docs else ""
+                        
+                        if context:
+                            st.success(f"📚 **Knowledge Base**: Found {len(relevant_docs)} relevant insights")
+                        else:
+                            st.info("🎨 **Creative Mode**: Using AI's built-in knowledge and creativity")
+                    
+                    # ==========================================
+                    # STEP 4: AI CREATIVE GENERATION
+                    # ==========================================
+                    st.markdown("### ✨ **AI CREATIVE GENERATION**")
+                    with st.expander("🤖 Click to see AI creative process", expanded=True):
+                        prompt = create_optimized_prompt()
+                        llm = ChatOpenAI(model="gpt-4o", temperature=0.7, max_tokens=800, openai_api_key=openai_api_key)
+                        
+                        custom_instruction = f"Focus on: {custom_query}" if custom_query else "Create engaging content based on the provided examples"
+                        
+                        # Dynamic generation visualization
+                        st.markdown("#### 🎨 **AI Creative Engine**")
+                        st.write("**🧠 AI Model**: GPT-4o (Advanced Creative AI)")
+                        st.write("**🎯 Creativity Level**: 70% (Balanced Creative & Strategic)")
+                        st.write("**📝 Output Length**: Up to 800 tokens")
+                        st.write(f"**🎯 Optimization Goal**: {goal.upper()}")
+                        
+                        if custom_query:
+                            st.write(f"**🎨 Custom Focus**: {custom_query}")
+                        else:
+                            st.write("**🎨 Creative Mode**: General Instagram optimization")
+                        
+                        # Show generation process
+                        st.markdown("#### ⚡ **Generation Process**")
+                        gen_progress = st.progress(0)
+                        gen_status = st.empty()
+                        
+                        gen_steps = [
+                            "🧠 Analyzing requirements...",
+                            "🎨 Crafting compelling hook...",
+                            "📝 Building engaging body...",
+                            "🎯 Creating strong CTA...",
+                            "📱 Optimizing caption...",
+                            "✨ Finalizing script..."
+                        ]
+                        
+                        for i, step in enumerate(gen_steps):
+                            gen_status.text(step)
+                            gen_progress.progress((i + 1) / len(gen_steps))
+                            time.sleep(0.3)
+                        
+                        gen_status.text("🎉 Generating your script...")
+                        gen_progress.progress(1.0)
+                        
+                        formatted_prompt = prompt.format(
+                            context=context, 
+                            goal=goal, 
+                            custom_instruction=custom_instruction
+                        )
+                        
+                        response = enforce_script_format(llm, formatted_prompt, max_retries=3)
+                    
+                    # ==========================================
+                    # STEP 5: FINAL RESULTS
+                    # ==========================================
+                    st.markdown("### 🎉 **CREATION COMPLETE!**")
+                    with st.expander("📋 Click to see generation summary", expanded=True):
+                        if response:
+                            st.success("🎉 **Script Generated Successfully!**")
+                            st.write(f"**📊 Script Length**: {len(response)} characters")
+                            st.write(f"**🎯 Optimized For**: {goal.upper()}")
+                            if custom_query:
+                                st.write(f"**🎨 Custom Focus**: {custom_query}")
+                            st.write("**✨ Your Instagram script is ready!**")
+                        else:
+                            st.error("❌ Generation failed. Please try again.")
+                    
+                    # Display the final result
+                    if response:
+                        st.markdown("### 🏆 Your Optimized Script")
                         st.markdown("---")
                         st.markdown(response)
                         st.markdown("---")
                         
-                    else:
-                        st.error("❌ Failed to generate content. Please try again.")
-                        
                 except Exception as e:
                     st.error(f"❌ An error occurred: {str(e)}")
+                    st.exception(e)  # Show full traceback
     
     with col2:
         st.header("📊 Information")
