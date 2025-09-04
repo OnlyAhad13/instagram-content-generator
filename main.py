@@ -382,10 +382,11 @@ def main():
                     if response:
                         st.success("✅ Content generated successfully!")
                         st.markdown("### 🏆 Your Optimized Script")
-                        st.markdown(f'<div class="script-output">{response}</div>', unsafe_allow_html=True)
                         
-                        # Copy to clipboard button
-                        st.code(response, language=None)
+                        # Display the generated content in a clean, readable format
+                        st.markdown("---")
+                        st.markdown(response)
+                        st.markdown("---")
                         
                     else:
                         st.error("❌ Failed to generate content. Please try again.")
@@ -394,61 +395,39 @@ def main():
                     st.error(f"❌ An error occurred: {str(e)}")
     
     with col2:
-        st.header("📊 Analytics")
+        st.header("📊 Information")
         
-        # Show data insights
-        with st.spinner("Loading data insights..."):
-            try:
-                _, data_docs, df = load_and_enhance_data(None)
-                
-                if df is not None and not df.empty:
-                    st.subheader("📈 Performance Insights")
-                    
-                    # Key metrics
-                    avg_likes = df['likes'].mean()
-                    avg_comments = df['comments'].mean()
-                    avg_views = df['views'].mean()
-                    
-                    st.markdown(f"""
-                    <div class="metric-card">
-                        <h4>💖 Avg Likes</h4>
-                        <h2>{avg_likes:.0f}</h2>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    <div class="metric-card">
-                        <h4>💬 Avg Comments</h4>
-                        <h2>{avg_comments:.0f}</h2>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    <div class="metric-card">
-                        <h4>👀 Avg Views</h4>
-                        <h2>{avg_views:.0f}</h2>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Performance distribution
-                    if 'performance_tier' in df.columns:
-                        st.subheader("🎯 Performance Distribution")
-                        tier_counts = df['performance_tier'].value_counts()
-                        st.bar_chart(tier_counts)
-                    
-                    st.subheader("📋 Data Preview")
-                    # Convert dataframe to string to avoid PyArrow issues
-                    st.dataframe(df.head().astype(str), width='stretch')
-                else:
-                    st.info("📊 No performance data available")
-                    
-            except Exception as e:
-                st.error(f"Error loading analytics: {str(e)}")
+        st.info("""
+        **🎯 How to Use:**
+        
+        1. **Enter your OpenAI API key** in the sidebar
+        2. **Add a custom query** (optional) for specific content
+        3. **Select optimization goal** (likes, comments, views, engagement)
+        4. **Upload style guide** (optional) or use default
+        5. **Click Generate** to create your Instagram script
+        
+        **✨ Features:**
+        - AI-powered content generation
+        - Custom style guide support
+        - Goal-based optimization
+        - Copy-friendly output format
+        """)
+        
+        st.markdown("---")
+        
+        st.subheader("📝 Output Format")
+        st.markdown("""
+        Your generated script will include:
+        - **Hook**: Attention-grabbing opening
+        - **Body**: Main content/story
+        - **CTA**: Call-to-action
+        - **Caption**: Complete caption with hashtags
+        """)
     
     # Footer
     st.markdown("---")
     st.markdown(
-        "Made with ❤️ using Streamlit",
+        "---",
         unsafe_allow_html=True
     )
 
