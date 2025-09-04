@@ -12,9 +12,10 @@ source venv/bin/activate
 ```
 
 ### 2. Required Files
-Upload these files through the web interface:
-- **Style Guide (.docx)** - Your content style guide document
-- **Performance Data (.xlsx)** - Your Instagram performance data
+- **Performance Data**: `IGScraper.xlsx` (automatically loaded from your project directory)
+- **Style Guide**: Optional - you can upload your own custom style guide (.docx) or use the default one
+
+Make sure `IGScraper.xlsx` is in the same directory as `main.py`
 
 ### 3. OpenAI API Key
 You need an OpenAI API key to use the generator. Enter it in the sidebar of the web app.
@@ -41,14 +42,17 @@ All required packages are listed in `requirements.txt` and have been installed i
 
 ## Features
 - 📱 **Web Interface**: Easy-to-use Streamlit web app
-- 📊 **File Upload**: Upload your style guide and performance data
+- 📊 **Auto-loaded Performance Data**: Automatically loads your Instagram performance data
+- 📝 **Flexible Style Guide**: Upload your own style guide or use the default one
 - 🎯 **Goal Optimization**: Choose to optimize for likes, comments, views, or engagement
 - 📈 **Analytics**: View performance insights and data preview
 - 🔄 **Real-time Generation**: Generate optimized content instantly
 - 📋 **Copy-friendly Output**: Easy to copy generated scripts
+- 🎨 **Custom Queries**: Enter specific instructions for targeted content
 
 ## Troubleshooting
 - If you get "pandas module not found", make sure you're using the virtual environment
 - If you get "OpenAI API key" error, enter your API key in the sidebar
 - If you see Streamlit warnings when running with `python main.py`, use `streamlit run main.py` instead
-- Make sure to upload at least one file (style guide or performance data) to generate content
+- If you get "file not found" errors, make sure the required files are in the same directory as `main.py`
+- The app automatically loads your data files - no need to upload them each time

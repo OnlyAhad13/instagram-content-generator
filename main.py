@@ -57,14 +57,15 @@ st.markdown("""
 # Helper Functions
 # =====================================
 @st.cache_data
-def load_and_enhance_data(style_file, data_file):
-    """Load and process the uploaded files"""
+def load_and_enhance_data(style_file=None):
+    """Load and process files - style guide can be uploaded, dataset is hardcoded"""
     try:
-        # Load style guide (.docx)
+        # Load style guide (.docx) - either uploaded or use default
         style_texts = []
+        
         if style_file is not None:
+            # Use uploaded style guide
             try:
-                # Reset file pointer to beginning
                 style_file.seek(0)
                 doc = DocxDocument(BytesIO(style_file.read()))
                 for i, p in enumerate(doc.paragraphs):
@@ -72,25 +73,44 @@ def load_and_enhance_data(style_file, data_file):
                         context = f"[Document section {i//10 + 1}] {p.text.strip()}"
                         style_texts.append(context)
             except Exception as e:
-                st.error(f"Error reading style guide: {str(e)}")
+                st.error(f"Error reading uploaded style guide: {str(e)}")
                 return [], [], None
+        else:
+            # Use default style guide
+            style_file_path = "July 2025 - Scripts & Captions [Mirrored Aesthetics] (1) (1).docx"
+            if os.path.exists(style_file_path):
+                try:
+                    doc = DocxDocument(style_file_path)
+                    for i, p in enumerate(doc.paragraphs):
+                        if p.text.strip():
+                            context = f"[Document section {i//10 + 1}] {p.text.strip()}"
+                            style_texts.append(context)
+                except Exception as e:
+                    st.error(f"Error reading default style guide: {str(e)}")
+                    return [], [], None
+            else:
+                st.warning(f"Default style guide file not found: {style_file_path}")
 
         style_docs = [Document(
             page_content=t,
             metadata={"source": "style_guide", "type": "expert_example", "relevance": "high"}
         ) for t in style_texts]
 
-        # Load dataset (.xlsx)
+        # Load dataset (.xlsx) - hardcoded file
         df = None
         data_docs = []
-        if data_file is not None:
+        data_file_path = "IGScraper.xlsx"
+        
+        if os.path.exists(data_file_path):
             try:
-                # Reset file pointer to beginning
-                data_file.seek(0)
-                df = pd.read_excel(data_file)
+                df = pd.read_excel(data_file_path)
             except Exception as e:
                 st.error(f"Error reading performance data: {str(e)}")
                 return [], [], None
+        else:
+            st.warning(f"Performance data file not found: {data_file_path}")
+        
+        if df is not None:
             df.columns = df.columns.str.strip().str.lower()
 
             # Numeric columns
@@ -241,7 +261,7 @@ def enforce_script_format(llm, prompt_text, max_retries=3):
             st.error(f"Error generating content: {str(e)}")
             return None
     
-    st.warning("Could not enforce format after retries. Returning last attempt.")
+    st.warning("❌ Could not enforce format after retries. Returning last attempt.")
     return response
 
 # =====================================
@@ -265,19 +285,24 @@ def main():
         
         st.markdown("---")
         
-        # File uploads
-        st.subheader("📁 Upload Files")
+        # Style guide upload
+        st.subheader("📝 Style Guide")
         style_file = st.file_uploader(
-            "Style Guide (.docx)",
+            "Upload Custom Style Guide (.docx)",
             type=['docx'],
-            help="Upload your style guide document"
+            help="Upload your custom style guide, or leave empty to use the default one"
         )
         
-        data_file = st.file_uploader(
-            "Performance Data (.xlsx)",
-            type=['xlsx'],
-            help="Upload your Instagram performance data"
-        )
+        if style_file is not None:
+            st.success("✅ Custom style guide uploaded")
+        else:
+            st.info("📄 Using default style guide")
+        
+        st.markdown("---")
+        
+        # Data status
+        st.subheader("📊 Data Status")
+        st.success("✅ Performance data loaded automatically")
         
         st.markdown("---")
         
@@ -308,16 +333,12 @@ def main():
             st.warning("⚠️ Please enter your OpenAI API key in the sidebar to proceed.")
             return
         
-        if not style_file and not data_file:
-            st.info("📤 Please upload at least one file (style guide or performance data) to generate content.")
-            return
-        
         # Generate button
         if st.button("🎬 Generate Instagram Script", type="primary", width='stretch'):
             with st.spinner("🔄 Analyzing your data and generating optimized content..."):
                 try:
                     # Load and process data
-                    style_docs, data_docs, df = load_and_enhance_data(style_file, data_file)
+                    style_docs, data_docs, df = load_and_enhance_data(style_file)
                     all_docs = style_docs + data_docs
                     
                     if not all_docs:
@@ -372,58 +393,61 @@ def main():
     with col2:
         st.header("📊 Analytics")
         
-        # Show data insights if available
-        if data_file:
-            with st.spinner("Loading data insights..."):
-                try:
-                    _, data_docs, df = load_and_enhance_data(None, data_file)
+        # Show data insights
+        with st.spinner("Loading data insights..."):
+            try:
+                _, data_docs, df = load_and_enhance_data(None)
+                
+                if df is not None and not df.empty:
+                    st.subheader("📈 Performance Insights")
                     
-                    if df is not None and not df.empty:
-                        st.subheader("📈 Performance Insights")
-                        
-                        # Key metrics
-                        avg_likes = df['likes'].mean()
-                        avg_comments = df['comments'].mean()
-                        avg_views = df['views'].mean()
-                        
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <h4>💖 Avg Likes</h4>
-                            <h2>{avg_likes:.0f}</h2>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <h4>💬 Avg Comments</h4>
-                            <h2>{avg_comments:.0f}</h2>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <h4>👀 Avg Views</h4>
-                            <h2>{avg_views:.0f}</h2>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # Performance distribution
-                        if 'performance_tier' in df.columns:
-                            st.subheader("🎯 Performance Distribution")
-                            tier_counts = df['performance_tier'].value_counts()
-                            st.bar_chart(tier_counts)
-                        
-                        st.subheader("📋 Data Preview")
-                        # Convert dataframe to string to avoid PyArrow issues
-                        st.dataframe(df.head().astype(str), width='stretch')
-                        
-                except Exception as e:
-                    st.error(f"Error loading analytics: {str(e)}")
-        else:
-            st.info("📊 Upload performance data to see analytics")
+                    # Key metrics
+                    avg_likes = df['likes'].mean()
+                    avg_comments = df['comments'].mean()
+                    avg_views = df['views'].mean()
+                    
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <h4>💖 Avg Likes</h4>
+                        <h2>{avg_likes:.0f}</h2>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <h4>💬 Avg Comments</h4>
+                        <h2>{avg_comments:.0f}</h2>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"""
+                    <div class="metric-card">
+                        <h4>👀 Avg Views</h4>
+                        <h2>{avg_views:.0f}</h2>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Performance distribution
+                    if 'performance_tier' in df.columns:
+                        st.subheader("🎯 Performance Distribution")
+                        tier_counts = df['performance_tier'].value_counts()
+                        st.bar_chart(tier_counts)
+                    
+                    st.subheader("📋 Data Preview")
+                    # Convert dataframe to string to avoid PyArrow issues
+                    st.dataframe(df.head().astype(str), width='stretch')
+                else:
+                    st.info("📊 No performance data available")
+                    
+            except Exception as e:
+                st.error(f"Error loading analytics: {str(e)}")
     
     # Footer
     st.markdown("---")
+    st.markdown(
+        "Made with ❤️ using Streamlit",
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
