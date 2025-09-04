@@ -1,0 +1,9 @@
+pandas>=2.0.0
+openpyxl>=3.1.0
+python-docx>=0.8.11
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain-community>=0.0.20
+faiss-cpu>=1.7.4
+openai>=1.0.0
+streamlit>=1.49.0
